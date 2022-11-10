@@ -2,6 +2,8 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
+import org.photonvision.PhotonCamera;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -145,5 +147,13 @@ public final class Constants {
         public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
             new TrapezoidProfile.Constraints(
                 kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
+    }
+    public static final class Elevator {
+        public static final int ELEVATOR_MOTOR_ID = -1;//TODO
+        
+    }
+    public static final class VisonConstants {
+        public static final String CAMERA_NAME = "";
+        public static final PhotonCamera CAMERA = new PhotonCamera(CAMERA_NAME);
     }
 }

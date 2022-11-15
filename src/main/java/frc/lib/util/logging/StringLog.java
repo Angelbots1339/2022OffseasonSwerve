@@ -4,31 +4,30 @@
 
 package frc.lib.util.logging;
 
-import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 
 import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.util.datalog.StringLogEntry;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import frc.lib.util.logging.Logger.LogPriority;
 
 /** Add your docs here. */
-public class DoubleLog {
-    private DoubleLogEntry logEntry;
+public class StringLog {
+    private StringLogEntry logEntry;
     private NetworkTableEntry shufflebordLogEntry;
-    private DoubleSupplier supplier;
-    private final LogPriority logType;
+    private Supplier<String> supplier;
+    private final LogPriority logPriority;
     private boolean continuous = false;
-
     private String key;
 
-    public DoubleLog(String key, LogPriority logPriority, String prefix) {
+    public StringLog(String key, LogPriority LogPriority, String prefix) {
         this.key = key;
-        this.logType = logPriority;
-        switch (logPriority) {
+        this.logPriority = LogPriority;
+        switch (LogPriority) {
             case ONBOARD_ONLY:
-            logEntry = new DoubleLogEntry(DataLogManager.getLog(), prefix + "/" + key);
+            logEntry = new StringLogEntry(DataLogManager.getLog(), prefix + "/" + key);
                 break;
             case SHUFFLEBOARD:
             shufflebordLogEntry = Shuffleboard.getTab(prefix).add(key, 0).getEntry();
@@ -40,27 +39,27 @@ public class DoubleLog {
         }
     }
 
-    public DoubleLog(String key, LogPriority logPriority, SubsystemLogger subsystem){
+    public StringLog(String key, LogPriority logPriority, SubsystemLogger subsystem){
         this(key, logPriority, subsystem.getName());
     }
 
-    public DoubleLog(String key, LogPriority logPriority, String prefix,  DoubleSupplier continuesLog) {
+    public StringLog(String key, LogPriority logPriority, String prefix,  Supplier<String> continuousLog) {
         this(key, logPriority, prefix);
-        supplier = continuesLog;
+        supplier = continuousLog;
         continuous = true;
     }
 
-    public DoubleLog(String key, LogPriority logPriority, SubsystemLogger subsystem,  DoubleSupplier continuousLog) {
+    public StringLog(String key, LogPriority logPriority, SubsystemLogger subsystem,  Supplier<String> continuousLog) {
         this(key, logPriority, subsystem.getName(), continuousLog);
     }
 
-    public void log(double value) {
-        switch (logType) {
+    public void log(String value) {
+        switch (logPriority) {
             case ONBOARD_ONLY:
             logEntry.append(value);
                 break;
             case SHUFFLEBOARD:
-            shufflebordLogEntry.setDouble(value);
+            shufflebordLogEntry.setString(value);
                 break;
             default:
                 break;
@@ -71,21 +70,19 @@ public class DoubleLog {
    
     public void log() {
         if(continuous){
-            switch (logType) {
+            switch (logPriority) {
                 case ONBOARD_ONLY:
-                logEntry.append(supplier.getAsDouble());
+                logEntry.append(supplier.get());
                     break;
                 case SHUFFLEBOARD:
-                shufflebordLogEntry.setDouble(supplier.getAsDouble());
+                shufflebordLogEntry.setString(supplier.get());
                     break;
                 default:
                     break; 
             }
         }
     }
-    public String getKey() {
-        return key;
-    }
-   
+     public String getKey() {
+         return key;
+     }
 }
-

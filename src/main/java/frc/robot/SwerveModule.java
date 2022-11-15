@@ -15,7 +15,7 @@ import com.ctre.phoenix.sensors.CANCoder;
 
 public class SwerveModule {
     public int moduleNumber;
-    private Rotation2d angleOffset;
+    public Rotation2d angleOffset;
     private Rotation2d lastAngle;
 
     private TalonFX mAngleMotor;

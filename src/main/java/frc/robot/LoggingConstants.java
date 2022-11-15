@@ -4,5 +4,14 @@
 
 package frc.robot;
 
+import frc.lib.util.logging.Logger.LogPriority;
+
 /** Add your docs here. */
-public class LoggingConstants {}
+public final class LoggingConstants {
+    public static final class Swerve{
+        public static final LogPriority logSensors = LogPriority.NONE;
+        public static final LogPriority logMotors = LogPriority.NONE;
+        public static final LogPriority logCalculatedValues = LogPriority.NONE;
+    }
+
+}

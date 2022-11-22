@@ -45,6 +45,7 @@ public class exampleAuto extends SequentialCommandGroup {
                 new Pose2d(3, 0, new Rotation2d(0)),
                 config);
 
+
         var thetaController =
             new ProfiledPIDController(
                 Constants.AutoConstants.kPThetaController, 0, 0, Constants.AutoConstants.kThetaControllerConstraints);

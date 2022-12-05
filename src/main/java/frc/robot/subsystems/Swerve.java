@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -40,6 +41,7 @@ public class Swerve extends SubsystemBase {
         gyro = new Pigeon2(Constants.Swerve.pigeonID);
         gyro.configFactoryDefault();
         zeroGyro();
+        
         
         logger.add("Yaw", () -> gyro.getYaw(), LogType.SENSOR);
         logger.add("Roll", () -> gyro.getRoll(), LogType.SENSOR);
@@ -144,11 +146,10 @@ public class Swerve extends SubsystemBase {
                   traj, 
                   this::getPose, // Pose supplier
                   Constants.Swerve.swerveKinematics, // SwerveDriveKinematics
-                  new PIDController(AutoConstants.kPXController, 0, 0), // X controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
-                  new PIDController(AutoConstants.kPYController, 0, 0), // Y controller (usually the same values as X controller)
+                  new PIDController(3.2023, 0, 0), // X controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
+                  new PIDController(3.2023, 0, 0), // Y controller (usually the same values as X controller)
                   new PIDController(AutoConstants.kPThetaController, 0, 0), // Rotation controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
-                  this::setModuleStates, // Module states consumer
-                  eventMap, // This argument is optional if you don't use event markers
+                  this::setModuleStates, // Module states consumer // This argument is optional if you don't use event markers
                   this // Requires this drive subsystem
               )
         );

@@ -6,6 +6,7 @@ package frc.robot.autos;
 
 import java.util.ArrayList;
 
+import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -20,14 +21,12 @@ import frc.robot.subsystems.Swerve;
 public class examplePathPlannerAuto extends SequentialCommandGroup {
   /** Creates a new examplePathPlannerAuto. */
   public examplePathPlannerAuto(Swerve swerve) {
-    ArrayList<PathPlannerTrajectory> trajectories = AutoUtils.loadTrajectoriesWithConstraints("TestPath");
+    //ArrayList<PathPlannerTrajectory> trajectories = AutoUtils.loadTrajectoriesWithConstraints("TestPath");
+    PathPlannerTrajectory trajectory = PathPlanner.loadPath("TestPath", PathPlanner.getConstraintsFromPath("TestPath"));
 
     addRequirements(swerve);
     addCommands(
-      swerve.followTrajectoryCommand(trajectories.get(0), true),
-      new WaitCommand(trajectories.get(0).getEndWaitTimeSeconds()),
-      swerve.followTrajectoryCommand(trajectories.get(1))
-
+      swerve.followTrajectoryCommand(trajectory, true)
       );
     
   }

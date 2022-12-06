@@ -71,6 +71,7 @@ public class Swerve extends SubsystemBase {
                                     translation.getY(), 
                                     rotation)
                                 );
+        
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
 
         for(SwerveModule mod : mSwerveMods){
@@ -80,6 +81,14 @@ public class Swerve extends SubsystemBase {
 
     /* Used by SwerveControllerCommand in Auto */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
+
+
+        for (int i = 0; i < desiredStates.length; i++) {
+            System.out.println(i + ": speed :" + desiredStates[i].speedMetersPerSecond);
+            System.out.println(i + ": angle :" +desiredStates[i].angle.getDegrees());
+        }
+        
+    
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.maxSpeed);
         
         for(SwerveModule mod : mSwerveMods){
@@ -120,12 +129,15 @@ public class Swerve extends SubsystemBase {
     @Override
     public void periodic(){
         swerveOdometry.update(getYaw(), getStates());  
+        SmartDashboard.putNumber("x pose meters", getPose().getX());
+        SmartDashboard.putNumber("y pose meters", getPose().getY());
 
         for(SwerveModule mod : mSwerveMods){
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
-            SmartDashboard.putNumber("Shuld be real angle " + mod.moduleNumber, mod.getCanCoder().getDegrees() - mod.angleOffset.getDegrees());
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
+            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
+            // SmartDashboard.putNumber("Shuld be real angle " + mod.moduleNumber, mod.getCanCoder().getDegrees() - mod.angleOffset.getDegrees());
+            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
+            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
+        
         }
     }
     

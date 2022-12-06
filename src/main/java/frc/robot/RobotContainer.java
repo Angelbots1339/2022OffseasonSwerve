@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
@@ -60,7 +61,7 @@ public class RobotContainer {
     private void configureButtonBindings() {
         /* Driver Buttons */
         zeroGyro.whenPressed(new InstantCommand(() -> s_Swerve.zeroGyro()));
-        zeroEncoders.whenPressed(new InstantCommand(() -> s_Swerve.resetToAbsolute()));
+        zeroEncoders.whenPressed(new InstantCommand(() -> s_Swerve.resetOdometry(new Pose2d())));
         
         
     }

@@ -13,6 +13,7 @@ import java.io.Console;
 import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.CANCoder;
 
@@ -109,13 +110,14 @@ public class SwerveModule {
         mDriveMotor.configFactoryDefault();
         mDriveMotor.configAllSettings(Robot.ctreConfigs.swerveDriveFXConfig);
         mDriveMotor.setInverted(Constants.Swerve.driveMotorInvert);
-        mDriveMotor.setNeutralMode(Constants.Swerve.driveNeutralMode);
+        mDriveMotor.setNeutralMode(NeutralMode.Coast);
         mDriveMotor.setSelectedSensorPosition(0);
         System.out.println(mDriveMotor.getLastError() + ":" + moduleNumber); 
     }
 
     public SwerveModuleState getState(){
         return new SwerveModuleState(
+            //FIXME check conversion 
             Conversions.falconToMPS(mDriveMotor.getSelectedSensorVelocity(), Constants.Swerve.wheelCircumference, Constants.Swerve.driveGearRatio), 
             getAngle()
         ); 

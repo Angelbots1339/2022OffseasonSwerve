@@ -1,9 +1,7 @@
 package frc.robot;
 
-import javax.swing.plaf.TreeUI;
-
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -30,6 +28,7 @@ public class RobotContainer {
 
     /* Driver Buttons */
     private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kY.value);
+    private final JoystickButton zeroEncoders = new JoystickButton(driver, XboxController.Button.kA.value);
 
     /* Subsystems */
     private final Swerve s_Swerve = new Swerve();
@@ -62,6 +61,9 @@ public class RobotContainer {
     private void configureButtonBindings() {
         /* Driver Buttons */
         zeroGyro.whenPressed(new InstantCommand(() -> s_Swerve.zeroGyro()));
+        zeroEncoders.whenPressed(new InstantCommand(() -> s_Swerve.resetOdometry(new Pose2d())));
+        
+        
     }
 
     /**
@@ -71,6 +73,12 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         // An ExampleCommand will run in autonomous
-        return new exampleAuto(s_Swerve);
+        return new examplePathPlannerAuto(s_Swerve);
+    }
+
+
+    public void resetToAbsloute() {
+        s_Swerve.resetToAbsolute();
+        
     }
 }

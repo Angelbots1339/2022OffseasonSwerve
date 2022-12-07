@@ -1,7 +1,12 @@
 package frc.robot.subsystems;
+
+import java.util.HashMap;
 import com.ctre.phoenix.sensors.Pigeon2;
+import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.commands.PPSwerveControllerCommand;
 import frc.robot.SwerveModule;
 import frc.robot.Constants.AngularDriveConstants;
+import frc.robot.Constants.AutoConstants;
 import frc.lib.util.logging.SubsystemLogger;
 import frc.lib.util.logging.SubsystemLogger.LogType;
 import frc.robot.Constants;
@@ -17,6 +22,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Swerve extends SubsystemBase {
@@ -35,6 +44,7 @@ public class Swerve extends SubsystemBase {
         gyro = new Pigeon2(Constants.Swerve.pigeonID);
         gyro.configFactoryDefault();
         zeroGyro();
+        
         
         logger.add("Yaw", () -> gyro.getYaw(), LogType.SENSOR);
         logger.add("Roll", () -> gyro.getRoll(), LogType.SENSOR);
@@ -77,6 +87,7 @@ public class Swerve extends SubsystemBase {
                                     translation.getY(), 
                                     rotation)
                                 );
+        
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
 
         for(SwerveModule mod : mSwerveMods){
@@ -110,6 +121,14 @@ public class Swerve extends SubsystemBase {
 
     /* Used by SwerveControllerCommand in Auto */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
+
+
+        for (int i = 0; i < desiredStates.length; i++) {
+            System.out.println(i + ": speed :" + desiredStates[i].speedMetersPerSecond);
+            System.out.println(i + ": angle :" +desiredStates[i].angle.getDegrees());
+        }
+        
+    
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.maxSpeed);
         
         for(SwerveModule mod : mSwerveMods){
@@ -132,6 +151,12 @@ public class Swerve extends SubsystemBase {
         }
         return states;
     }
+    public void resetToAbsolute(){
+        for(SwerveModule mod : mSwerveMods){
+            mod.resetToAbsolute();
+        }
+    }
+
 
     public void zeroGyro(){
         gyro.setYaw(0);
@@ -144,12 +169,45 @@ public class Swerve extends SubsystemBase {
     @Override
     public void periodic(){
         swerveOdometry.update(getYaw(), getStates());  
+        SmartDashboard.putNumber("x pose meters", getPose().getX());
+        SmartDashboard.putNumber("y pose meters", getPose().getY());
 
         for(SwerveModule mod : mSwerveMods){
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
-            SmartDashboard.putNumber("Shuld be real angle " + mod.moduleNumber, mod.getCanCoder().getDegrees() - mod.angleOffset.getDegrees());
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
+            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
+            // SmartDashboard.putNumber("Shuld be real angle " + mod.moduleNumber, mod.getCanCoder().getDegrees() - mod.angleOffset.getDegrees());
+            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
+            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
+        
         }
     }
+    
+    public Command followTrajectoryCommand(PathPlannerTrajectory traj, boolean isFirstPath) {
+        // This is just an example event map. It would be better to have a constant, global event map
+        // in your code that will be used by all path following commands.
+        HashMap<String, Command> eventMap = new HashMap<>();
+        eventMap.put("marker1", new PrintCommand("Passed marker 1"));
+    
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> {
+                // Reset odometry for the first path you run during auto
+                if(isFirstPath){
+                    this.resetOdometry(traj.getInitialHolonomicPose());
+                }
+              }),
+              new PPSwerveControllerCommand(
+                  traj, 
+                  this::getPose, // Pose supplier
+                  Constants.Swerve.swerveKinematics, // SwerveDriveKinematics
+                  new PIDController(3.2023, 0, 0), // X controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
+                  new PIDController(3.2023, 0, 0), // Y controller (usually the same values as X controller)
+                  new PIDController(AutoConstants.kPThetaController, 0, 0), // Rotation controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
+                  this::setModuleStates, // Module states consumer // This argument is optional if you don't use event markers
+                  this // Requires this drive subsystem
+              )
+        );
+    }
+    public Command followTrajectoryCommand(PathPlannerTrajectory traj) {
+        return followTrajectoryCommand(traj, false);
+    }
+
 }

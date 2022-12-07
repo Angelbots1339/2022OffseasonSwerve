@@ -1,5 +1,11 @@
 {
   "SysId": {
-    "Analysis Type": "Drivetrain"
+    "Analysis Type": "Drivetrain",
+    "NetworkTables Settings": {
+      "serverTeam": "1339"
+    },
+    "dsClient": false,
+    "mode": "Client",
+    "serverTeam": "1339"
   }
 }

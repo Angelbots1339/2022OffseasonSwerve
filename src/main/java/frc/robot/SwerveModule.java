@@ -80,6 +80,10 @@ public class SwerveModule {
         return Rotation2d.fromDegrees(angleEncoder.getAbsolutePosition());
     }
 
+    public double getEncoderInMeters(){
+        return Conversions.falconToMeters(mDriveMotor.getSelectedSensorPosition(), Constants.Swerve.wheelCircumference, Constants.Swerve.driveGearRatio);
+    }
+
     public void resetToAbsolute(){
         double absolutePosition = Conversions.degreesToFalcon(angleEncoder.getAbsolutePosition() - angleOffset.getDegrees(), Constants.Swerve.angleGearRatio);
         //System.out.println(absolutePosition   + ":inital clicks" + moduleNumber);

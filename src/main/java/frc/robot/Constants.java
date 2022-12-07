@@ -23,8 +23,8 @@ public final class Constants {
             COTSFalconSwerveConstants.SDSMK4i(COTSFalconSwerveConstants.driveGearRatios.SDSMK4i_L1);
 
         /* Drivetrain Constants */
-        public static final double trackWidth = Units.inchesToMeters(19.75); //TODO: This must be tuned to specific robot
-        public static final double wheelBase = Units.inchesToMeters(19.75); //TODO: This must be tuned to specific robot
+        public static final double trackWidth = Units.inchesToMeters(19.75); 
+        public static final double wheelBase = Units.inchesToMeters(19.75); 
         public static final double wheelCircumference = chosenModule.wheelCircumference;
 
         /* Module Gear Ratios */
@@ -92,7 +92,7 @@ public final class Constants {
 
         /* Module Specific Constants */
         /* Front Left Module - Module 0 */
-        public static final class Mod0 { //TODO: This must be tuned to specific robot
+        public static final class Mod0 { 
             public static final int driveMotorID = 1;
             public static final int angleMotorID = 5;
             public static final int canCoderID = 9;
@@ -102,7 +102,7 @@ public final class Constants {
         }
 
         /* Front Right Module - Module 1 */
-        public static final class Mod1 { //TODO: This must be tuned to specific robot
+        public static final class Mod1 { 
             public static final int driveMotorID = 2;
             public static final int angleMotorID = 6;
             public static final int canCoderID = 10;
@@ -112,7 +112,7 @@ public final class Constants {
         }
         
         /* Back Left Module - Module 2 */
-        public static final class Mod2 { //TODO: This must be tuned to specific robot
+        public static final class Mod2 { 
             public static final int driveMotorID = 3;
             public static final int angleMotorID = 7;
             public static final int canCoderID = 11;
@@ -122,7 +122,7 @@ public final class Constants {
         }
 
         /* Back Right Module - Module 3 */
-        public static final class Mod3 { //TODO: This must be tuned to specific robot
+        public static final class Mod3 { 
             public static final int driveMotorID = 4;
             public static final int angleMotorID = 8;
             public static final int canCoderID = 12;
@@ -155,5 +155,17 @@ public final class Constants {
     public static final class VisonConstants {
         public static final String CAMERA_NAME = "";
         public static final PhotonCamera CAMERA = new PhotonCamera(CAMERA_NAME);
+    }
+    public static final class AngularDriveConstants {
+
+        // TODO Tune these values
+        public static final double turnToAngleP = 0.005;
+        public static final double turnToAngleI = 0;
+        public static final double turnToAngleD = 0;
+
+        public static final double turnToAngleKF = 0.01;
+        public static final double turnToAngleKS = 0.0;
+        
+        public static final double turnToAngleTolerance = 2; // Degrees
     }
 }

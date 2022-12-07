@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -37,7 +38,7 @@ public class PidToTarget extends CommandBase {
       PhotonTrackedTarget target = CAMERA.getLatestResult().getBestTarget();
       Translation2d translation = new Translation2d(target.getCameraToTarget().getX(), target.getCameraToTarget().getY());
     
-      swerve.drive(translation, target.getYaw(), false, true);
+      swerve.angularDrive(translation, Rotation2d.fromDegrees(target.getYaw()), false, true);
       
     }
   }

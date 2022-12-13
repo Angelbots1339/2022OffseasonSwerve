@@ -38,6 +38,15 @@ public class Swerve extends SubsystemBase {
     private double lastDesiredDegrees;
     private double lastTime;
     
+    public static class XYPair {
+        public double X = 0;
+        public double Y = 0;
+
+        public XYPair(double X, double Y) {
+            this.X = X;
+            this.Y = Y;
+        }
+    }
 
     public Swerve() {
         logger = new SubsystemLogger("Swerve", LoggingConstants.Swerve.logMotors, LoggingConstants.Swerve.logSensors, LoggingConstants.Swerve.logCalculatedValues);
@@ -173,13 +182,10 @@ public class Swerve extends SubsystemBase {
         }
     }
 
-
-
     public void zeroGyro(){
         gyro.setYaw(0);
     }
 
-  
     public Rotation2d getYaw() {
         return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(360 - gyro.getYaw()) : Rotation2d.fromDegrees(gyro.getYaw());
     }

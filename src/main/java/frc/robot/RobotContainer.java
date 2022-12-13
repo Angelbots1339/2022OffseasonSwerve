@@ -40,13 +40,15 @@ public class RobotContainer {
         s_Swerve.setDefaultCommand(
             new TeleopSwerve(
                 s_Swerve, 
-                () -> -driver.getLeftY(), 
-                () -> -driver.getLeftX(), 
+                () -> driver.getLeftY(), 
+                () -> driver.getLeftX(), 
                 () -> driver.getRightX() , 
                 () -> driver.getRightY(), 
+                () -> driver.getRightStickButtonPressed(),
                 true
             )
         );
+
 
         // Configure the button bindings
         configureButtonBindings();

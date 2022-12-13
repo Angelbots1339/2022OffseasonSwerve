@@ -46,7 +46,7 @@ public class TeleopSwerve extends CommandBase {
 
       if(turnModeButtonPressed.getAsBoolean()) isTurnModePIDToAngle = !isTurnModePIDToAngle;
 
-      XYPair translationPair = mapJoysticks(new XYPair(MathUtil.applyDeadband(translationSup.getAsDouble(), Constants.stickDeadband), MathUtil.applyDeadband(strafeSup.getAsDouble(), Constants.stickDeadband)));
+      XYPair translationPair = mapJoysticks(new XYPair(MathUtil.applyDeadband(-translationSup.getAsDouble(), Constants.stickDeadband), MathUtil.applyDeadband(-strafeSup.getAsDouble(), Constants.stickDeadband)));
         
         if(Math.abs(rotationSupX.getAsDouble()) > 0.4 || Math.abs(rotationSupY.getAsDouble()) > 0.4){
             desiredRotation = ConvertJoystickToAngle(rotationSupX.getAsDouble(), rotationSupY.getAsDouble());

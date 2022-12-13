@@ -141,7 +141,7 @@ public final class Constants {
     
         public static final double kPXController = 1;
         public static final double kPYController = 1;
-        public static final double kPThetaController = 1;
+        public static final double kPThetaController = 3.2;
     
         // Constraint for the motion profilied robot angle controller
         public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
@@ -159,12 +159,12 @@ public final class Constants {
     public static final class AngularDriveConstants {
 
         // TODO Tune these values
-        public static final double turnToAngleP = 0.005;
+        public static final double turnToAngleP = 0.1; //radians per sec per degrees
         public static final double turnToAngleI = 0;
-        public static final double turnToAngleD = 0;
+        public static final double turnToAngleD = 0.01;
 
-        public static final double turnToAngleKF = 0.01;
-        public static final double turnToAngleKS = 0.0;
+        public static final double turnToAngleKv = 0.0;
+        public static final double turnToAngleKs = 0.7; //radians per sec
         
         public static final double turnToAngleTolerance = 2; // Degrees
     }

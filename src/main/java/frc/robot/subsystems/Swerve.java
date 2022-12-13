@@ -62,7 +62,7 @@ public class Swerve extends SubsystemBase {
         angularDrivePID =  new PIDController(AngularDriveConstants.turnToAngleP,
         AngularDriveConstants.turnToAngleI, AngularDriveConstants.turnToAngleD);
 
-        angularDrivePID.enableContinuousInput(-180, 180);
+        angularDrivePID.enableContinuousInput(0, 360);
         angularDrivePID.setTolerance(AngularDriveConstants.turnToAngleTolerance);
     }
 
@@ -105,17 +105,33 @@ public class Swerve extends SubsystemBase {
      */
     public void angularDrive(Translation2d translation, Rotation2d desiredDegrees, boolean fieldRelative, boolean isOpenLoop) {
 
-        double deltaDegrees = (lastDesiredDegrees - desiredDegrees.getDegrees()) / (Timer.getFPGATimestamp() - lastTime);
+       // Rotation2d desiredAngularVelocity  = Rotation2d.fromDegrees((lastDesiredDegrees - desiredDegrees.getDegrees()) / (Timer.getFPGATimestamp() - lastTime));
 
-        double rotation = MathUtil.clamp(
-            angularDrivePID.calculate(-gyro.getYaw(), desiredDegrees.getDegrees()) + // PID
-            ((deltaDegrees * AngularDriveConstants.turnToAngleKF) + (Math.signum(angularDrivePID.getPositionError()) * AngularDriveConstants.turnToAngleKS )), // Feedforward
-             -Constants.Swerve.maxAngularVelocity, Constants.Swerve.maxAngularVelocity); 
+      
+        double rotation = 0;
         
-             drive(translation, rotation, fieldRelative, isOpenLoop);
+        double yaw = (0 > getYaw().getDegrees()?  getYaw().getDegrees() % 360 + 360 : getYaw().getDegrees() % 360);
+        SmartDashboard.putNumber("yaw", yaw);
+        SmartDashboard.putNumber("setpoint", desiredDegrees.getDegrees());
 
-        lastDesiredDegrees = desiredDegrees.getDegrees();
-        lastTime = Timer.getFPGATimestamp();
+        
+        rotation = MathUtil.clamp(
+         angularDrivePID.calculate(yaw, desiredDegrees.getDegrees() + // PID
+            (!angularDrivePID.atSetpoint()? //feed foward
+           // ((-desiredAngularVelocity.getRadians() * 0) + // Kv Velocity Feedforward
+            ((Math.signum(angularDrivePID.getPositionError()) * AngularDriveConstants.turnToAngleKs )) : 0)), // Ks Static Friction Feedforward
+             -Constants.Swerve.maxAngularVelocity, Constants.Swerve.maxAngularVelocity); 
+    
+
+        
+        
+        drive(translation, rotation, fieldRelative, isOpenLoop);
+
+        SmartDashboard.putNumber("error", angularDrivePID.getPositionError());
+        //SmartDashboard.putNumber("setpoint velo", desiredAngularVelocity.getDegrees());
+
+        //lastDesiredDegrees = desiredDegrees.getDegrees();
+        //lastTime = Timer.getFPGATimestamp();
 
     }    
 
@@ -158,10 +174,12 @@ public class Swerve extends SubsystemBase {
     }
 
 
+
     public void zeroGyro(){
         gyro.setYaw(0);
     }
 
+  
     public Rotation2d getYaw() {
         return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(360 - gyro.getYaw()) : Rotation2d.fromDegrees(gyro.getYaw());
     }
@@ -169,11 +187,14 @@ public class Swerve extends SubsystemBase {
     @Override
     public void periodic(){
         swerveOdometry.update(getYaw(), getStates());  
-        SmartDashboard.putNumber("x pose meters", getPose().getX());
-        SmartDashboard.putNumber("y pose meters", getPose().getY());
+        //SmartDashboard.putNumber("x pose meters", getPose().getX());
+        //SmartDashboard.putNumber("y pose meters", getPose().getY());
+        SmartDashboard.putNumber("yaw", getYaw().getDegrees());
+        //SmartDashboard.putNumber("yaw good",  );
+
 
         for(SwerveModule mod : mSwerveMods){
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + ": Meters", mod.getEncoderInMeters());
+            //SmartDashboard.putNumber("Mod " + mod.moduleNumber + ": Meters", mod.getEncoderInMeters());
             // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
             // SmartDashboard.putNumber("Shuld be real angle " + mod.moduleNumber, mod.getCanCoder().getDegrees() - mod.angleOffset.getDegrees());
             // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());

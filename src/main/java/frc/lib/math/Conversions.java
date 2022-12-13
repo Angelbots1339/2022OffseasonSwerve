@@ -92,7 +92,7 @@ public class Conversions {
      * @return Meters
      */
     public static double falconToMeters(double positioncounts, double circumference, double gearRatio){
-        double wheelR = falconToRPM(positioncounts, gearRatio);
+        double wheelR = falconToRotaiton(positioncounts, gearRatio);
         double wheelM = (wheelR * circumference);
         return wheelM;
     }

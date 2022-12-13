@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -39,12 +40,11 @@ public class RobotContainer {
         s_Swerve.setDefaultCommand(
             new TeleopSwerve(
                 s_Swerve, 
-                () -> driver.getLeftY(), 
-                () -> driver.getLeftX(), 
-                () -> driver.getRightX(), 
+                () -> -driver.getLeftY(), 
+                () -> -driver.getLeftX(), 
+                () -> driver.getRightX() , 
                 () -> driver.getRightY(), 
-                () -> true,
-                () -> driver.getRightStickButtonPressed()
+                true
             )
         );
 
@@ -79,6 +79,13 @@ public class RobotContainer {
 
     public void resetToAbsloute() {
         s_Swerve.resetToAbsolute();
+    }
+
+    public void logJoysticks() {
+        SmartDashboard.putNumber("x", driver.getRightX());
+        SmartDashboard.putNumber("y", driver.getRightY());
+    SmartDashboard.putNumber("0", TeleopSwerve.ConvertJoystickToAngle(driver.getRightX(), driver.getRightY()).getDegrees());
+        
         
     }
 }

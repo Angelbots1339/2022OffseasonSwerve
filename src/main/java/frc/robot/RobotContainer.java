@@ -1,9 +1,11 @@
 package frc.robot;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -21,29 +23,50 @@ import frc.robot.subsystems.*;
 public class RobotContainer {
     /* Controllers */
     private final XboxController driver = new XboxController(0);
-
-    /* Drive Controls */
-    private final int translationAxis = XboxController.Axis.kLeftY.value;
-    private final int strafeAxis = XboxController.Axis.kLeftX.value;
-    private final int rotationAxis = XboxController.Axis.kRightX.value;
-
-    /* Driver Buttons */
-    private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kY.value);
-    private final JoystickButton zeroEncoders = new JoystickButton(driver, XboxController.Button.kA.value);
-
+    private final Joystick joystick = new Joystick(0);
+    
     /* Subsystems */
     private final Swerve s_Swerve = new Swerve();
 
 
+    /*----Controls----*/
+    /* Drive Controls */
+    //Up is postive right is postive
+    private DoubleSupplier translation = () -> -driver.getLeftY();
+    private DoubleSupplier strafe = () -> -driver.getLeftX();
+    private DoubleSupplier rotation = () -> driver.getRightX();
+
+    private DoubleSupplier angularJoystickX = rotation;
+    private DoubleSupplier angularJoystickY = () -> driver.getRightY();
+
+    //right is postive TODO
+    private int rotationAxis = XboxController.Axis.kRightX.value;
+
+    /* Buttons */
+    private final JoystickButton zeroGyro = new JoystickButton(joystick, XboxController.Button.kY.value);
+    private final JoystickButton zeroEncoders = new JoystickButton(joystick, XboxController.Button.kA.value);
+    
+
+
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
+        // s_Swerve.setDefaultCommand(
+        //     new TeleopSwerve(
+        //         s_Swerve, 
+        //         () -> -driver.getLeftY(), 
+        //         () -> -driver.getLeftX(), 
+        //         () -> driver.getRightX() , 
+        //         () -> driver.getRightY(), 
+        //         true
+        //     )
+        // );
         s_Swerve.setDefaultCommand(
             new TeleopSwerve(
                 s_Swerve, 
-                () -> -driver.getLeftY(), 
-                () -> -driver.getLeftX(), 
-                () -> driver.getRightX() , 
-                () -> driver.getRightY(), 
+                () -> -joystick.getRawAxis(1), 
+                () -> -joystick.getRawAxis(0), 
+                () -> joystick.getRawAxis(2) , 
+                () -> joystick.getRawAxis(3), 
                 true
             )
         );
@@ -52,6 +75,7 @@ public class RobotContainer {
         configureButtonBindings();
     }
 
+
     /**
      * Use this method to define your button->command mappings. Buttons can be created by
      * instantiating a {@link GenericHID} or one of its subclasses ({@link
@@ -59,11 +83,10 @@ public class RobotContainer {
      * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
      */
     private void configureButtonBindings() {
+
         /* Driver Buttons */
         zeroGyro.whenPressed(new InstantCommand(() -> s_Swerve.zeroGyro()));
-        zeroEncoders.whenPressed(new InstantCommand(() -> s_Swerve.resetOdometry(new Pose2d())));
-        
-        
+        zeroEncoders.whenPressed(new InstantCommand(() -> s_Swerve.resetOdometry(new Pose2d()))); 
     }
 
     /**
@@ -79,13 +102,5 @@ public class RobotContainer {
 
     public void resetToAbsloute() {
         s_Swerve.resetToAbsolute();
-    }
-
-    public void logJoysticks() {
-        SmartDashboard.putNumber("x", driver.getRightX());
-        SmartDashboard.putNumber("y", driver.getRightY());
-    SmartDashboard.putNumber("0", TeleopSwerve.ConvertJoystickToAngle(driver.getRightX(), driver.getRightY()).getDegrees());
-        
-        
     }
 }

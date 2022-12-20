@@ -18,7 +18,7 @@ public class TeleopSwerve extends CommandBase {
     private boolean isFieldRelative;
     private BooleanSupplier turnModeButtonPressed;
 
-    private boolean isTurnModePIDToAngle = true;
+    private boolean isTurnModePIDToAngle = false;
 
     // private SimpleMotorFeedforward turnFF = new SimpleMotorFeedforward(TeleopSwerveConstants.turnToAngleKS,
     //         TeleopSwerveConstants.turnToAngleKV, TeleopSwerveConstants.turnToAngleKA);
@@ -33,7 +33,7 @@ public class TeleopSwerve extends CommandBase {
         this.rotationSupX = rotationSupX;
         this.rotationSupY = rotationSupY;
         this.isFieldRelative = isFieldRelative;
-        this.turnModeButtonPressed = () -> true;// turnModeButtonPressed;
+        this.turnModeButtonPressed = () -> false;// turnModeButtonPressed;
     }
 
     private Rotation2d desiredRotation = new Rotation2d(0);
@@ -70,21 +70,21 @@ public class TeleopSwerve extends CommandBase {
        
 
         
-        double rotationVal = MathUtil.applyDeadband(rotationSupX.getAsDouble(), Constants.stickDeadband);
+        double rotationVal = MathUtil.applyDeadband(-rotationSupX.getAsDouble(), Constants.stickDeadband);
         
 
 
         /* Drive */
         if(isTurnModePIDToAngle) {
             s_Swerve.angularDrive(
-                new Translation2d(translationVal, strafeVal).times(Constants.Swerve.maxSpeed),
+                new Translation2d(translationVal, strafeVal).times(Constants.Swerve.MAX_SPEED),
                 desiredRotation,
                 isFieldRelative, // Field relative
                 true);
         } else{
         s_Swerve.drive(
-                new Translation2d(translationVal, strafeVal).times(Constants.Swerve.maxSpeed),
-                (rotationVal * Constants.Swerve.maxAngularVelocity),
+                new Translation2d(translationVal, strafeVal).times(Constants.Swerve.MAX_SPEED),
+                (rotationVal * Constants.Swerve.MAX_ANGULAR_VELOCITY),
                 isFieldRelative, // Field relative
                 true);
         }

@@ -1,5 +1,7 @@
 package frc.lib.math;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+
 public class Conversions {
 
     /**
@@ -108,4 +110,60 @@ public class Conversions {
         double wheelVelocity = RPMToFalcon(wheelRPM, gearRatio);
         return wheelVelocity;
     }
+    /**
+   * @param x position from joystick
+   * @param y position from joystick
+   * @return Rotation2d
+   * 
+   *         <pre>
+      Joystick input:
+               (y:-)
+                 |
+                 |
+       (x:-)-----|------(x:+)
+                 |
+                 |
+               (y:+)
+  
+   intial angle (-180 -> 180):
+             -180/180°
+               (x:-)
+                 |
+                 |
+   -90°(y:-)-----|------(y:+) 90°
+                 | ノ
+                 |   θ
+               (x:+)
+                0°
+  
+  transformed(+180) desired angle (0 -> 360): same angle as gyro
+                 0°
+               (x:+)
+             θ   |
+               / |
+    90°(y:+)-----|------(y:-)270°
+                 | 
+                 |  
+               (x:-)
+                180°
+   *         </pre>
+   */
+  public static Rotation2d ConvertJoystickToAngle(double x, double y) {
+    return new Rotation2d(Math.atan2(x, y) + Math.PI);
+  }
+
+  /**
+   * 
+   * Maps the joystick values from a circle to a square.
+   * Otherwise the joystick hardware reads values in a square from (-1, -1) to (1,
+   * 1), but because of the circular joystick shape you can never reach the
+   * corners of this square.
+   * 
+   * @param returnAxis The axis desired to be converted
+   * @param otherAxis the other axsis (need for computation)
+   * @return
+   */
+  public static Double mapJoystick(Double returnAxis, double otherAxis ) {
+    return returnAxis * Math.sqrt(1 - ((otherAxis * otherAxis) / 2));
+  }
 }

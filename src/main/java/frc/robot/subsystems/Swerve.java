@@ -4,9 +4,16 @@ import java.util.HashMap;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.commands.PPSwerveControllerCommand;
+import com.revrobotics.Rev2mDistanceSensor;
+import com.revrobotics.Rev2mDistanceSensor.Port;
+import com.revrobotics.Rev2mDistanceSensor.RangeProfile;
+import com.revrobotics.Rev2mDistanceSensor.Unit;
+
 import frc.robot.SwerveModule;
 import frc.lib.util.logging.SubsystemLogger;
 import frc.lib.util.logging.SubsystemLogger.LogType;
+import frc.lib.util.multiplexer.ColorSensorMUXed;
+import frc.lib.util.multiplexer.DistanceSensorMUXed;
 import frc.robot.LoggingConstants;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -18,6 +25,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
@@ -32,13 +40,22 @@ public class Swerve extends SubsystemBase {
     public Pigeon2 gyro;
     public SubsystemLogger logger;
 
+    private ColorSensorMUXed colorMUXed1 = new ColorSensorMUXed(2);
+    private ColorSensorMUXed colorMUXed0 = new ColorSensorMUXed(3);
+    private DistanceSensorMUXed distanceMUXed0 = new DistanceSensorMUXed(0, RangeProfile.kHighAccuracy);
+    private DistanceSensorMUXed distanceMUXed1 = new DistanceSensorMUXed(1, RangeProfile.kLongRange);
+    // Rev2mDistanceSensor rev2mDistanceSensor = new Rev2mDistanceSensor(Port.kOnboard, Unit.kMillimeters, RangeProfile.kDefault);
+
     private PIDController angularDrivePID;
 
     public Swerve() {
+
         logger = new SubsystemLogger("Swerve", LoggingConstants.Swerve.logMotors, LoggingConstants.Swerve.logSensors, LoggingConstants.Swerve.logCalculatedValues);
         gyro = new Pigeon2(PIGEON_ID);
         gyro.configFactoryDefault();
         zeroGyro();
+
+        
         
         
         logger.add("Yaw", () -> gyro.getYaw(), LogType.SENSOR);
@@ -158,13 +175,14 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic(){
+
+        SmartDashboard.putNumber("Color0", colorMUXed0.get().getRed());
+        SmartDashboard.putNumber("Color1", colorMUXed1.get().getRed());
+        SmartDashboard.putNumber("dist0", distanceMUXed0.getRange());
+        SmartDashboard.putNumber("dist1", distanceMUXed1.getRange());
+         
         for(SwerveModule mod : mSwerveMods){
-            //SmartDashboard.putNumber("Mod " + mod.moduleNumber + ": Meters", mod.getEncoderInMeters());
-            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
-            // SmartDashboard.putNumber("Shuld be real angle " + mod.moduleNumber, mod.getCanCoder().getDegrees() - mod.angleOffset.getDegrees());
-            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Integrated", mod.getState().angle.getDegrees());
-            // SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);    
-        
+         
         }
     }
     

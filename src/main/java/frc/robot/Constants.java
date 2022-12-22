@@ -10,6 +10,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import frc.lib.util.SwerveModuleConstants;
+import edu.wpi.first.wpilibj.I2C.Port;
+
 
 public final class Constants {
     public static final double stickDeadband = 0.04;
@@ -158,5 +160,9 @@ public final class Constants {
     public static final class VisonConstants {
         public static final String CAMERA_NAME = "";
         public static final PhotonCamera CAMERA = new PhotonCamera(CAMERA_NAME);
+    }
+    public final static class MultiplexerConstants {
+        public static final byte DEFAULT_ADDRESS = 0x70;
+        public static final Port DEFAULT_PORT = Port.kOnboard;
     }
 }

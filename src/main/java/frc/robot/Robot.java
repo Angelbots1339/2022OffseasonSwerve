@@ -5,10 +5,14 @@
 package frc.robot;
 import com.pathplanner.lib.server.PathPlannerServer;
 
+import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.util.logging.Logger;
+import frc.lib.util.multiplexer.Multiplexer;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -20,7 +24,10 @@ public class Robot extends TimedRobot {
   public static CTREConfigs ctreConfigs;
 
   private Command m_autonomousCommand;
-  private RobotContainer m_robotContainer;
+  private RobotContainer m_robotContainer;    
+  private final Joystick joystick = new Joystick(0);
+
+
 
  
 
@@ -38,6 +45,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.resetToAbsloute();
   }
 
+
   /**
    * This function is called every robot packet, no matter the mode. Use this for items like
    * diagnostics that you want ran during disabled, autonomous, teleoperated and test.
@@ -53,6 +61,13 @@ public class Robot extends TimedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
     Logger.getInstance().log();
+
+    if(joystick.getRawButtonPressed(1)){
+      
+      
+    }
+   
+
 
   }
 
@@ -92,7 +107,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+
+  }
 
   @Override
   public void testInit() {

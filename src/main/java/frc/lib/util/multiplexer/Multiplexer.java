@@ -20,8 +20,6 @@ public class Multiplexer extends I2C {
         super(DEFAULT_PORT, DEFAULT_ADDRESS);
     }
 
-
-    
     /**
      * Configures the multiplexer to pass through the selected device, if it is not
      * already selected
@@ -35,8 +33,8 @@ public class Multiplexer extends I2C {
         boolean success = !getInstance().write(0x00, 1 << port);
         if (!success) {
             DriverStation.reportError(String.format("Error switching to channel " + port +
-            "on Multiplexer. Please check your connections",
-            DEFAULT_PORT == Port.kMXP ? "MXP" : "Onboard"), false);
+                    " on Multiplexer. Please check your connections",
+                    DEFAULT_PORT == Port.kMXP ? "MXP" : "Onboard"), false);
         }
         currentDevice = port;
         return success;

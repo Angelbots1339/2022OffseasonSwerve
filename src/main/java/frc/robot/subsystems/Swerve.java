@@ -1,19 +1,15 @@
 package frc.robot.subsystems;
 
 import java.util.HashMap;
+
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.commands.PPSwerveControllerCommand;
-import com.revrobotics.Rev2mDistanceSensor;
-import com.revrobotics.Rev2mDistanceSensor.Port;
-import com.revrobotics.Rev2mDistanceSensor.RangeProfile;
-import com.revrobotics.Rev2mDistanceSensor.Unit;
 
 import frc.robot.SwerveModule;
-import frc.lib.util.logging.SubsystemLogger;
-import frc.lib.util.logging.SubsystemLogger.LogType;
-import frc.lib.util.multiplexer.ColorSensorMUXed;
-import frc.lib.util.multiplexer.DistanceSensorMUXed;
+import frc.lib.util.logging.LoggedContainer;
+import frc.lib.util.logging.LoggedSubsystem;
+import frc.lib.util.logging.loggedObjects.LoggedFalcon;
 import frc.robot.LoggingConstants;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -38,42 +34,40 @@ public class Swerve extends SubsystemBase {
     public SwerveDriveOdometry swerveOdometry;
     public SwerveModule[] mSwerveMods;
     public Pigeon2 gyro;
-    public SubsystemLogger logger;
-
-    private ColorSensorMUXed colorMUXed1 = new ColorSensorMUXed(2);
-    private ColorSensorMUXed colorMUXed0 = new ColorSensorMUXed(3);
-    private DistanceSensorMUXed distanceMUXed0 = new DistanceSensorMUXed(0, RangeProfile.kHighAccuracy);
-    private DistanceSensorMUXed distanceMUXed1 = new DistanceSensorMUXed(1, RangeProfile.kLongRange);
-    // Rev2mDistanceSensor rev2mDistanceSensor = new Rev2mDistanceSensor(Port.kOnboard, Unit.kMillimeters, RangeProfile.kDefault);
-
+    public LoggedSubsystem logger;
     private PIDController angularDrivePID;
 
     public Swerve() {
 
-        logger = new SubsystemLogger("Swerve", LoggingConstants.Swerve.logMotors, LoggingConstants.Swerve.logSensors, LoggingConstants.Swerve.logCalculatedValues);
+        logger = new LoggedSubsystem("Swerve", LoggingConstants.SWERVE);
+
         gyro = new Pigeon2(PIGEON_ID);
         gyro.configFactoryDefault();
         zeroGyro();
 
-        
-        
-        
-        logger.add("Yaw", () -> gyro.getYaw(), LogType.SENSOR);
-        logger.add("Roll", () -> gyro.getRoll(), LogType.SENSOR);
-        logger.add("Pitch", () -> gyro.getPitch(), LogType.SENSOR);
-        
         swerveOdometry = new SwerveDriveOdometry(swerveKinematics, getYaw());
 
         mSwerveMods = new SwerveModule[] {
-            new SwerveModule(0, Mod0.constants),
-            new SwerveModule(1, Mod1.constants),
-            new SwerveModule(2, Mod2.constants),
-            new SwerveModule(3, Mod3.constants)
+                new SwerveModule(0, Mod0.constants),
+                new SwerveModule(1, Mod1.constants),
+                new SwerveModule(2, Mod2.constants),
+                new SwerveModule(3, Mod3.constants)
         };
-      
 
-        angularDrivePID =  new PIDController(AngularDriveConstants.ANGLE_KP,
-        AngularDriveConstants.ANGLE_KI, AngularDriveConstants.ANGLE_KD);
+        logger.addDouble("Yaw", () -> gyro.getYaw(), "Gyro");
+        logger.addDouble("Roll", () -> gyro.getRoll(), "Gyro");
+        logger.addDouble("Pitch", () -> gyro.getPitch(), "Gyro");
+        
+
+        for (int i = 0; i < mSwerveMods.length; i++) {
+            logger.add(new LoggedFalcon("Angle Motor: " + i, logger, mSwerveMods[i].getAngleMotor(), "Motor", true));
+            logger.add(new LoggedFalcon("Drive Motor: " + i, logger, mSwerveMods[i].getDriveMotor(), "Motor", true));
+        }
+
+    
+
+        angularDrivePID = new PIDController(AngularDriveConstants.ANGLE_KP,
+                AngularDriveConstants.ANGLE_KI, AngularDriveConstants.ANGLE_KD);
 
         angularDrivePID.enableContinuousInput(0, 360);
         angularDrivePID.setTolerance(AngularDriveConstants.TURN_TO_ANGLE_TOLERANCE);
@@ -81,69 +75,74 @@ public class Swerve extends SubsystemBase {
 
     /**
      * 
-     * @param translation Translation2d holding the desired velocities on each axis
-     * @param rotation Desired rotational velocity
+     * @param translation   Translation2d holding the desired velocities on each
+     *                      axis
+     * @param rotation      Desired rotational velocity
      * @param fieldRelative If true, the robot behaves as field relative
      * @param isOpenLoop
      */
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
-        SwerveModuleState[] swerveModuleStates =
-            swerveKinematics.toSwerveModuleStates(
+        SwerveModuleState[] swerveModuleStates = swerveKinematics.toSwerveModuleStates(
                 fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    translation.getX(), 
-                                    translation.getY(), 
-                                    rotation, 
-                                    getYaw()
-                                )
-                                : new ChassisSpeeds(
-                                    translation.getX(), 
-                                    translation.getY(), 
-                                    rotation)
-                                );
-        
+                        translation.getX(),
+                        translation.getY(),
+                        rotation,
+                        getYaw())
+                        : new ChassisSpeeds(
+                                translation.getX(),
+                                translation.getY(),
+                                rotation));
+
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, MAX_SPEED);
 
-        for(SwerveModule mod : mSwerveMods){
+        for (SwerveModule mod : mSwerveMods) {
             mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
         }
-    }    
-
+    }
 
     private double lastDesiredDegrees;
     private double lastTime;
+
     /**
-     * @param translation Translation2d holding the desired velocities on each axis
-     * @param desiredDegrees The desired orientation of the robot, whith 0 being straight forward
-     * @param fieldRelative If true, the robot behaves as field relative
+     * @param translation    Translation2d holding the desired velocities on each
+     *                       axis
+     * @param desiredDegrees The desired orientation of the robot, whith 0 being
+     *                       straight forward
+     * @param fieldRelative  If true, the robot behaves as field relative
      * @param isOpenLoop
      */
-    public void angularDrive(Translation2d translation, Rotation2d desiredDegrees, boolean fieldRelative, boolean isOpenLoop) {
+    public void angularDrive(Translation2d translation, Rotation2d desiredDegrees, boolean fieldRelative,
+            boolean isOpenLoop) {
 
-        Rotation2d desiredAngularVelocity  = Rotation2d.fromDegrees((lastDesiredDegrees - desiredDegrees.getDegrees()) / (Timer.getFPGATimestamp() - lastTime));
+        Rotation2d desiredAngularVelocity = Rotation2d.fromDegrees(
+                (lastDesiredDegrees - desiredDegrees.getDegrees()) / (Timer.getFPGATimestamp() - lastTime));
         lastDesiredDegrees = desiredDegrees.getDegrees();
         lastTime = Timer.getFPGATimestamp();
 
         double rotation = 0;
-        //convert yaw into -180 -> 180 and abslute
-        double yaw = (0 > getYaw().getDegrees()?  getYaw().getDegrees() % 360 + 360 : getYaw().getDegrees() % 360);
+        // convert yaw into -180 -> 180 and abslute
+        double yaw = (0 > getYaw().getDegrees() ? getYaw().getDegrees() % 360 + 360 : getYaw().getDegrees() % 360);
         rotation = MathUtil.clamp(
-         angularDrivePID.calculate(yaw, desiredDegrees.getDegrees() + // PID
-            (!angularDrivePID.atSetpoint()? //feed foward
-           (-desiredAngularVelocity.getRadians() * AngularDriveConstants.ANGLE_KV) + // Kv Velocity Feedforward
-            ((Math.signum(angularDrivePID.getPositionError()) * AngularDriveConstants.ANGLE_KS )) : 0)), // Ks Static Friction Feedforward
-             -MAX_ANGULAR_VELOCITY, MAX_ANGULAR_VELOCITY); 
-    
+                angularDrivePID.calculate(yaw, desiredDegrees.getDegrees() + // PID
+                        (!angularDrivePID.atSetpoint() ? // feed foward
+                                (-desiredAngularVelocity.getRadians() * AngularDriveConstants.ANGLE_KV) + // Kv Velocity
+                                                                                                          // Feedforward
+                                        ((Math.signum(angularDrivePID.getPositionError())
+                                                * AngularDriveConstants.ANGLE_KS))
+                                : 0)), // Ks Static Friction Feedforward
+                -MAX_ANGULAR_VELOCITY, MAX_ANGULAR_VELOCITY);
+
         drive(translation, rotation, fieldRelative, isOpenLoop);
-    }    
+    }
 
     /* Used by SwerveControllerCommand in Auto */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, MAX_SPEED);
-        
-        for(SwerveModule mod : mSwerveMods){
+
+        for (SwerveModule mod : mSwerveMods) {
             mod.setDesiredState(desiredStates[mod.moduleNumber], false);
         }
-    }    
+    }
 
     public Pose2d getPose() {
         return swerveOdometry.getPoseMeters();
@@ -153,64 +152,65 @@ public class Swerve extends SubsystemBase {
         swerveOdometry.resetPosition(pose, getYaw());
     }
 
-    public SwerveModuleState[] getStates(){
+    public SwerveModuleState[] getStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
-        for(SwerveModule mod : mSwerveMods){
+        for (SwerveModule mod : mSwerveMods) {
             states[mod.moduleNumber] = mod.getState();
         }
         return states;
     }
-    public void resetToAbsolute(){
-        for(SwerveModule mod : mSwerveMods){
+
+    public void resetToAbsolute() {
+        for (SwerveModule mod : mSwerveMods) {
             mod.resetToAbsolute();
         }
     }
 
-    public void zeroGyro(){
+    public void zeroGyro() {
         gyro.setYaw(0);
     }
+
     public Rotation2d getYaw() {
         return (INVERT_GYRO) ? Rotation2d.fromDegrees(360 - gyro.getYaw()) : Rotation2d.fromDegrees(gyro.getYaw());
     }
 
     @Override
-    public void periodic(){
+    public void periodic() {
 
-        SmartDashboard.putNumber("Color0", colorMUXed0.get().getRed());
-        SmartDashboard.putNumber("Color1", colorMUXed1.get().getRed());
-        SmartDashboard.putNumber("dist0", distanceMUXed0.getRange());
-        SmartDashboard.putNumber("dist1", distanceMUXed1.getRange());
-         
-        for(SwerveModule mod : mSwerveMods){
-         
+        for (SwerveModule mod : mSwerveMods) {
+
         }
     }
-    
+
     public Command followTrajectoryCommand(PathPlannerTrajectory traj, boolean isFirstPath) {
-        // This is just an example event map. It would be better to have a constant, global event map
+        // This is just an example event map. It would be better to have a constant,
+        // global event map
         // in your code that will be used by all path following commands.
         HashMap<String, Command> eventMap = new HashMap<>();
         eventMap.put("marker1", new PrintCommand("Passed marker 1"));
-    
+
         return new SequentialCommandGroup(
-            new InstantCommand(() -> {
-                // Reset odometry for the first path you run during auto
-                if(isFirstPath){
-                    this.resetOdometry(traj.getInitialHolonomicPose());
-                }
-              }),
-              new PPSwerveControllerCommand(
-                  traj, 
-                  this::getPose, // Pose supplier
-                  swerveKinematics, // SwerveDriveKinematics
-                  new PIDController(3.2023, 0, 0), // X controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
-                  new PIDController(3.2023, 0, 0), // Y controller (usually the same values as X controller)
-                  new PIDController(THETA_KP, 0, 0), // Rotation controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
-                  this::setModuleStates, // Module states consumer // This argument is optional if you don't use event markers
-                  this // Requires this drive subsystem
-              )
-        );
+                new InstantCommand(() -> {
+                    // Reset odometry for the first path you run during auto
+                    if (isFirstPath) {
+                        this.resetOdometry(traj.getInitialHolonomicPose());
+                    }
+                }),
+                new PPSwerveControllerCommand(
+                        traj,
+                        this::getPose, // Pose supplier
+                        swerveKinematics, // SwerveDriveKinematics
+                        new PIDController(3.2023, 0, 0), // X controller. Tune these values for your robot. Leaving them
+                                                         // 0 will only use feedforwards.
+                        new PIDController(3.2023, 0, 0), // Y controller (usually the same values as X controller)
+                        new PIDController(THETA_KP, 0, 0), // Rotation controller. Tune these values for your robot.
+                                                           // Leaving them 0 will only use feedforwards.
+                        this::setModuleStates, // Module states consumer // This argument is optional if you don't use
+                                               // event markers
+                        this // Requires this drive subsystem
+                ));
     }
+
     public Command followTrajectoryCommand(PathPlannerTrajectory traj) {
         return followTrajectoryCommand(traj, false);
     }

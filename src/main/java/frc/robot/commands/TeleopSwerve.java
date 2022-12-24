@@ -19,6 +19,7 @@ public class TeleopSwerve extends CommandBase {
   private Supplier<Rotation2d> angle;
   private boolean isFieldRelative;
   private BooleanSupplier isAngularDrive;
+
   /**
    * @param swerve          subsystem
    * @param translation     -1 -> 1: 1 is foward -1 is backwards
@@ -59,7 +60,4 @@ public class TeleopSwerve extends CommandBase {
     }
   }
 
-  
-
-  
 }

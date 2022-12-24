@@ -1,0 +1,9 @@
+{
+  "download": {
+    "localDir": "C:\\Users\\ethan\\Dev\\Robotics\\2022OffseasonSwerve\\logs\\DatalogTool",
+    "serverTeam": "1339"
+  },
+  "output": {
+    "outputFolder": "C:\\Users\\ethan\\Dev\\Robotics\\2022OffseasonSwerve\\logs\\outputCSVs"
+  }
+}

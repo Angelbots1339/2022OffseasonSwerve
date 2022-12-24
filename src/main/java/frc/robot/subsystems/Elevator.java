@@ -13,10 +13,10 @@ import static frc.robot.Constants.Elevator.*;
 public class Elevator extends SubsystemBase {
 
   WPI_TalonFX elvatorMotor = new WPI_TalonFX(ELEVATOR_MOTOR_ID);
+
   /** Creates a new Elevator. */
   public Elevator() {
-  
-    
+
   }
 
   @Override
@@ -24,5 +24,4 @@ public class Elevator extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-  
 }

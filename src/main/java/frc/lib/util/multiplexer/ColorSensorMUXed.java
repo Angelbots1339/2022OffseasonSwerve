@@ -10,34 +10,34 @@ public class ColorSensorMUXed {
     private final int port;
     private ColorSensorV3 sensor;
     private boolean enabled;
-    
-
 
     public ColorSensorMUXed(int port) {
-        
+
         this.port = port;
-        if(Multiplexer.getInstance().setDevice(port)){
+        if (Multiplexer.getInstance().setDevice(port)) {
             sensor = new ColorSensorV3(DEFAULT_PORT);
-            if(sensor.isConnected()){
+            if (sensor.isConnected()) {
                 enabled = true;
             }
         }
-        
-        
+
     }
+
     public ColorSensorV3 get() {
-        if(Multiplexer.getInstance().setDevice(port) && enabled)
+        if (Multiplexer.getInstance().setDevice(port) && enabled)
             return sensor;
         return null;
     }
+
     public boolean getEnabled() {
         return enabled;
     }
+
     public void reset() {
         enabled = false;
-        if(Multiplexer.getInstance().setDevice(port)){
+        if (Multiplexer.getInstance().setDevice(port)) {
             sensor = new ColorSensorV3(DEFAULT_PORT);
-            if(sensor.isConnected()){
+            if (sensor.isConnected()) {
                 enabled = true;
             }
         }

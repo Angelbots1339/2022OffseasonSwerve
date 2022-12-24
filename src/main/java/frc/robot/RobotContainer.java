@@ -32,7 +32,7 @@ import frc.robot.subsystems.*;
  */
 public class RobotContainer {
     /* Controllers */
-    //private final XboxController driver = new XboxController(0);
+    // private final XboxController driver = new XboxController(0);
 
     /* Subsystems */
     private final Swerve swerve = new Swerve();
@@ -44,34 +44,42 @@ public class RobotContainer {
     /* Drive Controls */
     // Up is postive right is postive
 
-    //Maps to rect than applys deadband
-    // private DoubleSupplier translation = () -> MathUtil.applyDeadband(Conversions.mapJoystick(-driver.getLeftY(), -driver.getLeftX()), Constants.stickDeadband);
-    // private DoubleSupplier strafe = () -> MathUtil.applyDeadband(Conversions.mapJoystick(-driver.getLeftY(), -driver.getLeftX()), Constants.stickDeadband);
+    // Maps to rect than applys deadband
+    // private DoubleSupplier translation = () ->
+    // MathUtil.applyDeadband(Conversions.mapJoystick(-driver.getLeftY(),
+    // -driver.getLeftX()), Constants.stickDeadband);
+    // private DoubleSupplier strafe = () ->
+    // MathUtil.applyDeadband(Conversions.mapJoystick(-driver.getLeftY(),
+    // -driver.getLeftX()), Constants.stickDeadband);
     // private DoubleSupplier rotation = () -> driver.getRightX();
 
     // private Rotation2d prevousAngle = swerve.getYaw();
     // private Supplier<Rotation2d> angle = () -> {
-    //     if(Math.abs(driver.getRightX()) > Constants.angularStickDeadband && Math.abs(driver.getRightX()) > Constants.angularStickDeadband){
-    //         prevousAngle = Conversions.ConvertJoystickToAngle(driver.getRightX(), driver.getRightY());
-    //     }
-    //     return prevousAngle;
+    // if(Math.abs(driver.getRightX()) > Constants.angularStickDeadband &&
+    // Math.abs(driver.getRightX()) > Constants.angularStickDeadband){
+    // prevousAngle = Conversions.ConvertJoystickToAngle(driver.getRightX(),
+    // driver.getRightY());
+    // }
+    // return prevousAngle;
     // };
 
-
     /* Buttons */
-    //private final JoystickButton zeroGyro = new JoystickButton(driver, XboxController.Button.kY.value);
-    //private final JoystickButton zeroEncoders = new JoystickButton(driver, XboxController.Button.kA.value);
-    //private final JoystickButton switchDriveMode = new JoystickButton(driver, XboxController.Button.kRightStick.value);
-   
+    // private final JoystickButton zeroGyro = new JoystickButton(driver,
+    // XboxController.Button.kY.value);
+    // private final JoystickButton zeroEncoders = new JoystickButton(driver,
+    // XboxController.Button.kA.value);
+    // private final JoystickButton switchDriveMode = new JoystickButton(driver,
+    // XboxController.Button.kRightStick.value);
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
      */
     public RobotContainer() {
         // swerve.setDefaultCommand(
-        //         new TeleopSwerve(swerve, translation, strafe, rotation, angle, () -> isAngularDrive,
-        //                 true // Is feild relitive
-        //         ));
+        // new TeleopSwerve(swerve, translation, strafe, rotation, angle, () ->
+        // isAngularDrive,
+        // true // Is feild relitive
+        // ));
 
         // Configure the button bindings
         configureButtonBindings();
@@ -89,8 +97,10 @@ public class RobotContainer {
         /* Driver Buttons */
 
         // zeroGyro.whenPressed(new InstantCommand(swerve::zeroGyro));
-        // zeroEncoders.whenPressed(new InstantCommand(() -> swerve.resetOdometry(new Pose2d()), swerve));
-        // switchDriveMode.whenPressed(new InstantCommand(() -> isAngularDrive = !isAngularDrive));
+        // zeroEncoders.whenPressed(new InstantCommand(() -> swerve.resetOdometry(new
+        // Pose2d()), swerve));
+        // switchDriveMode.whenPressed(new InstantCommand(() -> isAngularDrive =
+        // !isAngularDrive));
 
     }
 

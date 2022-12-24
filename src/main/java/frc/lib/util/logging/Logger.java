@@ -7,34 +7,35 @@ package frc.lib.util.logging;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.wpi.first.wpilibj2.command.Subsystem;
-
 /** Add your docs here. */
-public class Logger {
+public class Logger implements Iloggable {
 
     private static Logger logger;
-    private List<SubsystemLogger> subsystems = new ArrayList<SubsystemLogger>();
+    private List<LoggedContainer> subsystems = new ArrayList<LoggedContainer>();
+
     public static Logger getInstance() {
-        if(logger == null) {
+        if (logger == null) {
             logger = new Logger();
         }
         return logger;
     }
 
-    public void addSubsystem(SubsystemLogger subsystemLogger) {
+    public void addContainer(LoggedContainer subsystemLogger) {
         subsystems.add(subsystemLogger);
     }
-
-    public void log() {
-        for (SubsystemLogger subsystemLogger : subsystems) {
-            subsystemLogger.log();
-        }
+    public void removeContainer(LoggedContainer subsystemLogger) {
+        subsystems.remove(subsystemLogger);
     }
-   
-    public enum LogPriority {
+
+    public void log(long timestamp) {
+        subsystems.forEach(logger -> logger.log(timestamp));
+
+    }
+
+    public enum LoggingLevel {
         SHUFFLEBOARD,
         ONBOARD_ONLY,
         NONE
     }
-    
+
 }

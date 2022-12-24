@@ -4,14 +4,16 @@
 
 package frc.robot;
 
-import frc.lib.util.logging.Logger.LogPriority;
+import java.util.Map;
+
+import frc.lib.util.logging.Logger.LoggingLevel;
 
 /** Add your docs here. */
 public final class LoggingConstants {
-    public static final class Swerve{
-        public static final LogPriority logSensors = LogPriority.NONE;
-        public static final LogPriority logMotors = LogPriority.NONE;
-        public static final LogPriority logCalculatedValues = LogPriority.NONE;
-    }
-
+    public static final Map<String, LoggingLevel> SWERVE = Map.of(
+            "Motor", LoggingLevel.ONBOARD_ONLY,
+            "Gyro", LoggingLevel.ONBOARD_ONLY,
+            "Default", LoggingLevel.NONE);
+    public static final Map<String, LoggingLevel> GLOBAL = Map.of(
+            "Default", LoggingLevel.NONE);
 }

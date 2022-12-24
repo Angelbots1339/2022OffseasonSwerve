@@ -15,9 +15,9 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import frc.robot.subsystems.Swerve;
 
-
 public class PidToTarget extends CommandBase {
   Swerve swerve;
+
   /** Creates a new PidToTarget. */
   public PidToTarget(Swerve swerve) {
     this.swerve = swerve;
@@ -27,25 +27,28 @@ public class PidToTarget extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
 
-  //TODO test output of camera and make sure units are aproprite
+  // TODO test output of camera and make sure units are aproprite
   @Override
   public void execute() {
-    if(CAMERA.getLatestResult().hasTargets()){
+    if (CAMERA.getLatestResult().hasTargets()) {
       PhotonTrackedTarget target = CAMERA.getLatestResult().getBestTarget();
-      Translation2d translation = new Translation2d(target.getCameraToTarget().getX(), target.getCameraToTarget().getY());
-    
+      Translation2d translation = new Translation2d(target.getCameraToTarget().getX(),
+          target.getCameraToTarget().getY());
+
       swerve.angularDrive(translation, Rotation2d.fromDegrees(target.getYaw()), false, true);
-      
+
     }
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+  }
 
   // Returns true when the command should end.
   @Override

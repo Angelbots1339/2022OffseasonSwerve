@@ -16,9 +16,11 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -28,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.AutoConstants.*;
+import static frc.robot.Constants.Swerve.PoseEstimatorConstants.*;
 import static frc.robot.Constants.Swerve.*;
 
 public class Swerve extends SubsystemBase {
@@ -36,6 +39,7 @@ public class Swerve extends SubsystemBase {
     public Pigeon2 gyro;
     public LoggedSubsystem logger;
     private PIDController angularDrivePID;
+    private SwerveDrivePoseEstimator poseEstimator;
 
     public Swerve() {
 
@@ -45,7 +49,9 @@ public class Swerve extends SubsystemBase {
         gyro.configFactoryDefault();
         zeroGyro();
 
-        swerveOdometry = new SwerveDriveOdometry(swerveKinematics, getYaw());
+        swerveOdometry = new SwerveDriveOdometry(KINEMATICS, getYaw());
+
+        poseEstimator = new SwerveDrivePoseEstimator(getYaw(), new Pose2d(), KINEMATICS, STATE_STD_DEVS, LOCAL_MEASURMENT_STD_DEVS, VISION_MEASUREMENT_STD_DEVS);
 
         mSwerveMods = new SwerveModule[] {
                 new SwerveModule(0, Mod0.constants),
@@ -54,17 +60,8 @@ public class Swerve extends SubsystemBase {
                 new SwerveModule(3, Mod3.constants)
         };
 
-        logger.addDouble("Yaw", () -> gyro.getYaw(), "Gyro");
-        logger.addDouble("Roll", () -> gyro.getRoll(), "Gyro");
-        logger.addDouble("Pitch", () -> gyro.getPitch(), "Gyro");
-        
+        initializeLog();
 
-        for (int i = 0; i < mSwerveMods.length; i++) {
-            logger.add(new LoggedFalcon("Angle Motor: " + i, logger, mSwerveMods[i].getAngleMotor(), "Motor", true));
-            logger.add(new LoggedFalcon("Drive Motor: " + i, logger, mSwerveMods[i].getDriveMotor(), "Motor", true));
-        }
-
-    
 
         angularDrivePID = new PIDController(AngularDriveConstants.ANGLE_KP,
                 AngularDriveConstants.ANGLE_KI, AngularDriveConstants.ANGLE_KD);
@@ -72,6 +69,8 @@ public class Swerve extends SubsystemBase {
         angularDrivePID.enableContinuousInput(0, 360);
         angularDrivePID.setTolerance(AngularDriveConstants.TURN_TO_ANGLE_TOLERANCE);
     }
+
+    
 
     /**
      * 
@@ -82,7 +81,7 @@ public class Swerve extends SubsystemBase {
      * @param isOpenLoop
      */
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
-        SwerveModuleState[] swerveModuleStates = swerveKinematics.toSwerveModuleStates(
+        SwerveModuleState[] swerveModuleStates = KINEMATICS.toSwerveModuleStates(
                 fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
                         translation.getX(),
                         translation.getY(),
@@ -93,11 +92,7 @@ public class Swerve extends SubsystemBase {
                                 translation.getY(),
                                 rotation));
 
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, MAX_SPEED);
-
-        for (SwerveModule mod : mSwerveMods) {
-            mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
-        }
+        setModuleStates(swerveModuleStates, isOpenLoop);
     }
 
     private double lastDesiredDegrees;
@@ -126,10 +121,10 @@ public class Swerve extends SubsystemBase {
                 angularDrivePID.calculate(yaw, desiredDegrees.getDegrees() + // PID
                         (!angularDrivePID.atSetpoint() ? // feed foward
                                 (-desiredAngularVelocity.getRadians() * AngularDriveConstants.ANGLE_KV) + // Kv Velocity
-                                                                                                          // Feedforward
+                                                                                                          // Feedfoward
                                         ((Math.signum(angularDrivePID.getPositionError())
-                                                * AngularDriveConstants.ANGLE_KS))
-                                : 0)), // Ks Static Friction Feedforward
+                                                * AngularDriveConstants.ANGLE_KS)) // Ks Static Friction Feedforward
+                                : 0)),
                 -MAX_ANGULAR_VELOCITY, MAX_ANGULAR_VELOCITY);
 
         drive(translation, rotation, fieldRelative, isOpenLoop);
@@ -137,19 +132,69 @@ public class Swerve extends SubsystemBase {
 
     /* Used by SwerveControllerCommand in Auto */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, MAX_SPEED);
+        setModuleStates(desiredStates, false);
+    }
 
+    public void setModuleStates(SwerveModuleState[] desiredStates, Boolean isOpenLoop) {
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, MAX_SPEED);
         for (SwerveModule mod : mSwerveMods) {
-            mod.setDesiredState(desiredStates[mod.moduleNumber], false);
+            mod.setDesiredState(desiredStates[mod.moduleNumber], isOpenLoop);
+
         }
+    }
+    /*-----Possible Slutions for Swerve Drive Skew------ */
+
+    // See
+    // https://www.chiefdelphi.com/t/whitepaper-swerve-drive-skew-and-second-order-kinematics/416964/5?u=ethan1
+    public ChassisSpeeds reduceSkewFromChassisSpeeds254(ChassisSpeeds chassisSpeeds) {
+        frc.lib.team254.geometry.Pose2d robot_pose_vel = new frc.lib.team254.geometry.Pose2d(
+                chassisSpeeds.vxMetersPerSecond * LOOPER_DT,
+                chassisSpeeds.vyMetersPerSecond * LOOPER_DT,
+                frc.lib.team254.geometry.Rotation2d.fromRadians(chassisSpeeds.omegaRadiansPerSecond * LOOPER_DT));
+        frc.lib.team254.geometry.Twist2d twist_vel = frc.lib.team254.geometry.Pose2d.log(robot_pose_vel);
+        return new ChassisSpeeds(
+                twist_vel.dx / LOOPER_DT, twist_vel.dy / LOOPER_DT, twist_vel.dtheta / LOOPER_DT);
+
+    }
+
+    // See
+    // https://www.chiefdelphi.com/t/whitepaper-swerve-drive-skew-and-second-order-kinematics/416964/11?u=ethan1
+    public ChassisSpeeds reduceSkewFromChassisSpeedsFudgeFactor(ChassisSpeeds chassisSpeeds) {
+        double linearVelocity = Math.sqrt(Math.pow(chassisSpeeds.vxMetersPerSecond, 2))
+                + Math.pow(chassisSpeeds.vyMetersPerSecond, 2);
+        double fudgeFactor = chassisSpeeds.omegaRadiansPerSecond / linearVelocity * FUDGE_FACTOR_KP;
+        double unitOrthX = -chassisSpeeds.vyMetersPerSecond / linearVelocity; // might need to swith signs to get corect
+                                                                              // sign of movment
+        double unitOrthy = chassisSpeeds.vxMetersPerSecond / linearVelocity;
+        double fudgeOrthX = fudgeFactor * unitOrthX;
+        double fudgeOrthY = fudgeFactor * unitOrthy;
+        return new ChassisSpeeds(fudgeOrthX + chassisSpeeds.vxMetersPerSecond,
+                fudgeOrthY + chassisSpeeds.vyMetersPerSecond, chassisSpeeds.omegaRadiansPerSecond);
+    }
+
+    public ChassisSpeeds reduceSkewFromChassisSpeedsSimpleFudgeFactor(ChassisSpeeds chassisSpeeds) {
+        double linearVelocity = Math.sqrt(Math.pow(chassisSpeeds.vxMetersPerSecond, 2))
+                + Math.pow(chassisSpeeds.vyMetersPerSecond, 2);
+        double fudgeFactor = Math.signum(chassisSpeeds.omegaRadiansPerSecond) * FUDGE_FACTOR_SIMPLE_KP;
+        double unitOrthX = -chassisSpeeds.vyMetersPerSecond / linearVelocity; // might need to swith signs to get corect
+                                                                              // sign of movment
+        double unitOrthy = chassisSpeeds.vxMetersPerSecond / linearVelocity;
+        double fudgeOrthX = fudgeFactor * unitOrthX;
+        double fudgeOrthY = fudgeFactor * unitOrthy;
+        return new ChassisSpeeds(fudgeOrthX + chassisSpeeds.vxMetersPerSecond,
+                fudgeOrthY + chassisSpeeds.vyMetersPerSecond, chassisSpeeds.omegaRadiansPerSecond);
     }
 
     public Pose2d getPose() {
         return swerveOdometry.getPoseMeters();
     }
+    public Pose2d getEstimatedPose() {
+        return poseEstimator.getEstimatedPosition();
+    }
 
     public void resetOdometry(Pose2d pose) {
         swerveOdometry.resetPosition(pose, getYaw());
+        poseEstimator.resetPosition(pose, getYaw());
     }
 
     public SwerveModuleState[] getStates() {
@@ -176,9 +221,18 @@ public class Swerve extends SubsystemBase {
 
     @Override
     public void periodic() {
+        swerveOdometry.update(getYaw(), getStates());
+        poseEstimator.update(getYaw(), getStates());
+    }
 
-        for (SwerveModule mod : mSwerveMods) {
+    public void initializeLog() {
+        logger.addDouble("Yaw", () -> gyro.getYaw(), "Gyro");
+        logger.addDouble("Roll", () -> gyro.getRoll(), "Gyro");
+        logger.addDouble("Pitch", () -> gyro.getPitch(), "Gyro");
 
+        for (int i = 0; i < mSwerveMods.length; i++) {
+            logger.add(new LoggedFalcon("Angle Motor: " + i, logger, mSwerveMods[i].getAngleMotor(), "Motor", true));
+            logger.add(new LoggedFalcon("Drive Motor: " + i, logger, mSwerveMods[i].getDriveMotor(), "Motor", true));
         }
     }
 
@@ -199,7 +253,7 @@ public class Swerve extends SubsystemBase {
                 new PPSwerveControllerCommand(
                         traj,
                         this::getPose, // Pose supplier
-                        swerveKinematics, // SwerveDriveKinematics
+                        KINEMATICS, // SwerveDriveKinematics
                         new PIDController(3.2023, 0, 0), // X controller. Tune these values for your robot. Leaving them
                                                          // 0 will only use feedforwards.
                         new PIDController(3.2023, 0, 0), // Y controller (usually the same values as X controller)

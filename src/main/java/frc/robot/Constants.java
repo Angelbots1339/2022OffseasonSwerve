@@ -4,9 +4,14 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 import org.photonvision.PhotonCamera;
 
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import frc.lib.util.SwerveModuleConstants;
@@ -17,6 +22,11 @@ public final class Constants {
     public static final double angularStickDeadband = 0.04;
 
     public static final class Swerve {
+
+        public static final double LOOPER_DT = 0.01; // used for 254's solution to swerve skew it is loop time in sec
+        public static final double FUDGE_FACTOR_KP = 0; // used for the CD fudge factor solution to swerve skew
+        public static final double FUDGE_FACTOR_SIMPLE_KP = 0; // used for the CD fudge factor solution to swerve skew
+
         public static final int PIGEON_ID = 16;
         public static final boolean INVERT_GYRO = false; // Always ensure Gyro is CCW+ CW-
 
@@ -43,7 +53,7 @@ public final class Constants {
          * No need to ever change this unless you are not doing a traditional
          * rectangular/square 4 module swerve
          */
-        public static final SwerveDriveKinematics swerveKinematics = new SwerveDriveKinematics(
+        public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(
                 new Translation2d(WHEEL_BASE / 2.0, TRACK_WIDTH / 2.0),
                 new Translation2d(WHEEL_BASE / 2.0, -TRACK_WIDTH / 2.0),
                 new Translation2d(-WHEEL_BASE / 2.0, TRACK_WIDTH / 2.0),
@@ -150,6 +160,37 @@ public final class Constants {
             public static final double ANGLE_KS = 0.7; // radians per sec
 
             public static final double TURN_TO_ANGLE_TOLERANCE = 2; // Degrees
+        }
+
+        public static final class PoseEstimatorConstants {
+            /*
+             * Standard deviations of model states. Increase these numbers to trust your
+             * model's state estimates less. This matrix is in the form [x, y, theta]ᵀ, with
+             * units in
+             * meters and radians.
+             */
+            public static final Matrix<N3, N1> STATE_STD_DEVS = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(
+                    0.00,
+                    0.00,
+                    0.00);
+            /*
+             * Standard deviations of the encoder and gyro measurements.
+             * Increase these numbers to trust sensor readings from encoders and gyros less.
+             * This matrix
+             * is in the form [theta], with units in radians.
+             */
+            public static final Matrix<N1, N1> LOCAL_MEASURMENT_STD_DEVS = new MatBuilder<>(Nat.N1(), Nat.N1()).fill(
+                    0.00);
+            /*
+             * Standard deviations of the vision measurements. Increase these
+             * numbers to trust global measurements from vision less. This matrix is in the
+             * form [x, y,theta]ᵀ,
+             * with units in meters and radians.
+             */
+            public static final Matrix<N3, N1> VISION_MEASUREMENT_STD_DEVS = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(
+                0.00,
+                0.00,
+                0.00);
         }
 
     }
